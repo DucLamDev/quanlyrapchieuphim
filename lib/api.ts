@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosError } from 'axios'
 
-// const API_URL ='https://quanlyrapchieuphim-be.onrender.com/api'
-const API_URL ='http://localhost:5000/api'
+const API_URL ='https://quanlyrapchieuphim-be.onrender.com/api'
+// const API_URL ='http://localhost:5000/api'
 
 class APIClient {
   private client: AxiosInstance
