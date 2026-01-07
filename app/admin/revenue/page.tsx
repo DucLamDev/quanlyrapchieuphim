@@ -30,14 +30,16 @@ export default function AdminRevenue() {
   const [viewType, setViewType] = useState<'period' | 'movie' | 'cinema'>('period')
   const [revenueData, setRevenueData] = useState<any[]>([])
   const [stats, setStats] = useState<any>(null)
+  const [authChecked, setAuthChecked] = useState(false)
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== 'admin') {
       router.push('/')
       return
     }
+    setAuthChecked(true)
     fetchRevenueData()
-  }, [isAuthenticated, user, timeRange, viewType])
+  }, [isAuthenticated, user, timeRange, viewType, router])
 
   const fetchRevenueData = async () => {
     try {
@@ -87,6 +89,10 @@ export default function AdminRevenue() {
       style: 'currency',
       currency: 'VND'
     }).format(amount)
+  }
+
+  if (!authChecked) {
+    return null
   }
 
   if (loading) {

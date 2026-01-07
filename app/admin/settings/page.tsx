@@ -20,6 +20,7 @@ export default function AdminSettingsPage() {
   
   const [loading, setLoading] = useState(false)
   const [showApiKey, setShowApiKey] = useState(false)
+  const [authChecked, setAuthChecked] = useState(false)
   const [settings, setSettings] = useState({
     siteName: 'Cinema Management System',
     siteEmail: 'support@cinema.com',
@@ -44,7 +45,8 @@ export default function AdminSettingsPage() {
       router.push('/')
       return
     }
-  }, [isAuthenticated, user])
+    setAuthChecked(true)
+  }, [isAuthenticated, user, router])
 
   const handleChange = (e: any) => {
     const { name, value, type, checked } = e.target
@@ -73,6 +75,10 @@ export default function AdminSettingsPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (!authChecked) {
+    return null
   }
 
   return (

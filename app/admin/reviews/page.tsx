@@ -17,14 +17,16 @@ export default function AdminReviews() {
   const [reviews, setReviews] = useState<any[]>([])
   const [filteredReviews, setFilteredReviews] = useState<any[]>([])
   const [sentimentFilter, setSentimentFilter] = useState('all')
+  const [authChecked, setAuthChecked] = useState(false)
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== 'admin') {
       router.push('/')
       return
     }
+    setAuthChecked(true)
     fetchReviews()
-  }, [isAuthenticated, user])
+  }, [isAuthenticated, user, router])
 
   useEffect(() => {
     filterReviews()
@@ -107,6 +109,10 @@ export default function AdminReviews() {
     averageRating: reviews.length > 0
       ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
       : 0
+  }
+
+  if (!authChecked) {
+    return null
   }
 
   if (loading) {

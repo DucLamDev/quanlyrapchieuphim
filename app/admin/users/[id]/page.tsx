@@ -21,6 +21,7 @@ export default function UserDetailPage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [authChecked, setAuthChecked] = useState(false)
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -33,10 +34,11 @@ export default function UserDetailPage() {
       router.push('/')
       return
     }
+    setAuthChecked(true)
     if (params.id) {
       fetchUser()
     }
-  }, [isAuthenticated, currentUser, params.id])
+  }, [isAuthenticated, currentUser, params.id, router])
 
   const fetchUser = async () => {
     try {
@@ -92,7 +94,7 @@ export default function UserDetailPage() {
     }
   }
 
-  if (!isAuthenticated || currentUser?.role !== 'admin') {
+  if (!authChecked) {
     return null
   }
 

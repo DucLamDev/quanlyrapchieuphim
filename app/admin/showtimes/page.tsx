@@ -21,15 +21,17 @@ export default function AdminShowtimesPage() {
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [stats, setStats] = useState<any>(null)
+  const [authChecked, setAuthChecked] = useState(false)
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== 'admin') {
       router.push('/')
       return
     }
+    setAuthChecked(true)
     fetchShowtimes()
     fetchStats()
-  }, [isAuthenticated, user])
+  }, [isAuthenticated, user, router])
 
   const fetchShowtimes = async () => {
     try {
@@ -157,6 +159,10 @@ export default function AdminShowtimesPage() {
         variant: 'destructive'
       })
     }
+  }
+
+  if (!authChecked) {
+    return null
   }
 
   return (

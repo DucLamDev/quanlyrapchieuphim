@@ -22,14 +22,16 @@ export default function AdminBookings() {
   const [selectedBooking, setSelectedBooking] = useState<any>(null)
   const [showTicket, setShowTicket] = useState(false)
   const [ticketData, setTicketData] = useState<any>(null)
+  const [authChecked, setAuthChecked] = useState(false)
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== 'admin') {
       router.push('/')
       return
     }
+    setAuthChecked(true)
     fetchBookings()
-  }, [isAuthenticated, user])
+  }, [isAuthenticated, user, router])
 
   useEffect(() => {
     filterBookings()
@@ -113,6 +115,10 @@ export default function AdminBookings() {
     confirmed: bookings.filter(b => b.status === 'confirmed').length,
     pending: bookings.filter(b => b.status === 'pending').length,
     cancelled: bookings.filter(b => b.status === 'cancelled').length
+  }
+
+  if (!authChecked) {
+    return null
   }
 
   if (loading) {

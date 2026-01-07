@@ -27,6 +27,7 @@ export default function AdminUsersPage() {
   const [editingUser, setEditingUser] = useState<any>(null)
   const [selectedCinemaId, setSelectedCinemaId] = useState('')
   const [saving, setSaving] = useState(false)
+  const [authChecked, setAuthChecked] = useState(false)
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -41,9 +42,10 @@ export default function AdminUsersPage() {
       router.push('/')
       return
     }
+    setAuthChecked(true)
     fetchUsers()
     fetchCinemas()
-  }, [isAuthenticated, user])
+  }, [isAuthenticated, user, router])
 
   const fetchUsers = async () => {
     try {
@@ -170,6 +172,10 @@ export default function AdminUsersPage() {
     const matchesRole = roleFilter === 'all' || u.role === roleFilter
     return matchesSearch && matchesRole
   })
+
+  if (!authChecked) {
+    return null
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">

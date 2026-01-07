@@ -37,14 +37,16 @@ export default function AdminAnalytics() {
   const [revenueData, setRevenueData] = useState<any[]>([])
   const [stats, setStats] = useState<any>(null)
   const [movieStats, setMovieStats] = useState<any[]>([])
+  const [authChecked, setAuthChecked] = useState(false)
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== 'admin') {
       router.push('/')
       return
     }
+    setAuthChecked(true)
     fetchAnalytics()
-  }, [isAuthenticated, user, timeRange])
+  }, [isAuthenticated, user, timeRange, router])
 
   const fetchAnalytics = async () => {
     try {
@@ -99,6 +101,10 @@ export default function AdminAnalytics() {
         variant: 'destructive'
       })
     }
+  }
+
+  if (!authChecked) {
+    return null
   }
 
   if (loading) {

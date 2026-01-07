@@ -22,6 +22,7 @@ export default function AdminCinemasPage() {
   const [showModal, setShowModal] = useState(false)
   const [editingCinema, setEditingCinema] = useState<any>(null)
   const [saving, setSaving] = useState(false)
+  const [authChecked, setAuthChecked] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     address: '',
@@ -40,8 +41,9 @@ export default function AdminCinemasPage() {
       router.push('/')
       return
     }
+    setAuthChecked(true)
     fetchCinemas()
-  }, [isAuthenticated, user])
+  }, [isAuthenticated, user, router])
 
   const fetchCinemas = async () => {
     try {
@@ -233,7 +235,7 @@ export default function AdminCinemasPage() {
     cinema.name?.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  if (!isAuthenticated || user?.role !== 'admin') {
+  if (!authChecked) {
     return null
   }
 

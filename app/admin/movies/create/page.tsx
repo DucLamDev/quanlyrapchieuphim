@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Upload, Calendar, Clock } from 'lucide-react'
@@ -17,6 +17,7 @@ export default function CreateMoviePage() {
   const { user, isAuthenticated } = useAuthStore()
   
   const [loading, setLoading] = useState(false)
+  const [authChecked, setAuthChecked] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -33,8 +34,15 @@ export default function CreateMoviePage() {
     status: 'coming-soon'
   })
 
-  if (!isAuthenticated || user?.role !== 'admin') {
-    router.push('/')
+  useEffect(() => {
+    if (!isAuthenticated || user?.role !== 'admin') {
+      router.push('/')
+    } else {
+      setAuthChecked(true)
+    }
+  }, [isAuthenticated, user, router])
+
+  if (!authChecked) {
     return null
   }
 

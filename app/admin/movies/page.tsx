@@ -22,14 +22,16 @@ export default function AdminMoviesPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [filter, setFilter] = useState('all')
+  const [authChecked, setAuthChecked] = useState(false)
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== 'admin') {
       router.push('/')
       return
     }
+    setAuthChecked(true)
     fetchMovies()
-  }, [isAuthenticated, user, filter])
+  }, [isAuthenticated, user, filter, router])
 
   const fetchMovies = async () => {
     try {
@@ -77,6 +79,10 @@ export default function AdminMoviesPage() {
   const filteredMovies = movies.filter(movie =>
     movie.title?.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  if (!authChecked) {
+    return null
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">

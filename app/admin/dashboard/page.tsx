@@ -31,14 +31,16 @@ export default function AdminDashboard() {
   const [activities, setActivities] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [timeRange, setTimeRange] = useState('7d')
+  const [authChecked, setAuthChecked] = useState(false)
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== 'admin') {
       router.push('/')
       return
     }
+    setAuthChecked(true)
     fetchDashboardData()
-  }, [isAuthenticated, user, timeRange])
+  }, [isAuthenticated, user, timeRange, router])
 
   const fetchDashboardData = async () => {
     try {
@@ -61,6 +63,10 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (!authChecked) {
+    return null
   }
 
   if (loading) {

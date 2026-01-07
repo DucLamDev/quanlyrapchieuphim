@@ -17,6 +17,7 @@ export default function CreateShowtimePage() {
   const { user, isAuthenticated } = useAuthStore()
   
   const [loading, setLoading] = useState(false)
+  const [authChecked, setAuthChecked] = useState(false)
   const [movies, setMovies] = useState<any[]>([])
   const [cinemas, setCinemas] = useState<any[]>([])
   const [formData, setFormData] = useState({
@@ -35,8 +36,9 @@ export default function CreateShowtimePage() {
       router.push('/')
       return
     }
+    setAuthChecked(true)
     fetchData()
-  }, [isAuthenticated, user])
+  }, [isAuthenticated, user, router])
 
   const fetchData = async () => {
     try {
@@ -106,7 +108,7 @@ export default function CreateShowtimePage() {
     }
   }
 
-  if (!isAuthenticated || user?.role !== 'admin') {
+  if (!authChecked) {
     return null
   }
 

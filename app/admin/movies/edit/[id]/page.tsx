@@ -19,6 +19,7 @@ export default function EditMoviePage() {
   
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
+  const [authChecked, setAuthChecked] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -40,10 +41,11 @@ export default function EditMoviePage() {
       router.push('/')
       return
     }
+    setAuthChecked(true)
     if (params.id) {
       fetchMovie()
     }
-  }, [isAuthenticated, user, params.id])
+  }, [isAuthenticated, user, params.id, router])
 
   const fetchMovie = async () => {
     try {
@@ -118,7 +120,7 @@ export default function EditMoviePage() {
     }
   }
 
-  if (!isAuthenticated || user?.role !== 'admin') {
+  if (!authChecked) {
     return null
   }
 

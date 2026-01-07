@@ -20,6 +20,7 @@ export default function AdminPromotions() {
   const [showModal, setShowModal] = useState(false)
   const [editingPromotion, setEditingPromotion] = useState<any>(null)
   const [saving, setSaving] = useState(false)
+  const [authChecked, setAuthChecked] = useState(false)
   const [formData, setFormData] = useState({
     code: '',
     description: '',
@@ -38,8 +39,9 @@ export default function AdminPromotions() {
       router.push('/')
       return
     }
+    setAuthChecked(true)
     fetchPromotions()
-  }, [isAuthenticated, user])
+  }, [isAuthenticated, user, router])
 
   const fetchPromotions = async () => {
     try {
@@ -187,6 +189,10 @@ export default function AdminPromotions() {
     active: promotions.filter(p => p.isActive && new Date(p.validUntil) > new Date()).length,
     expired: promotions.filter(p => new Date(p.validUntil) < new Date()).length,
     totalDiscount: promotions.reduce((sum, p) => sum + (p.totalUsed * p.discountValue || 0), 0)
+  }
+
+  if (!authChecked) {
+    return null
   }
 
   if (loading) {
