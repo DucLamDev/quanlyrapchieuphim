@@ -9,6 +9,7 @@ import { useAuthStore } from '@/lib/store'
 import { api } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/use-toast'
+import { Pagination } from '@/components/ui/pagination'
 
 export default function AdminPromotions() {
   const router = useRouter()
@@ -21,6 +22,8 @@ export default function AdminPromotions() {
   const [editingPromotion, setEditingPromotion] = useState<any>(null)
   const [saving, setSaving] = useState(false)
   const [authChecked, setAuthChecked] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 6
   const [formData, setFormData] = useState({
     code: '',
     description: '',
@@ -191,6 +194,13 @@ export default function AdminPromotions() {
     totalDiscount: promotions.reduce((sum, p) => sum + (p.totalUsed * p.discountValue || 0), 0)
   }
 
+  // Pagination logic
+  const totalPages = Math.ceil(promotions.length / itemsPerPage)
+  const paginatedPromotions = promotions.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
+
   if (!authChecked) {
     return null
   }
@@ -254,7 +264,7 @@ export default function AdminPromotions() {
 
         {/* Promotions Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {promotions.map((promo: any) => {
+          {paginatedPromotions.map((promo: any) => {
             const isActive = promo.isActive && new Date(promo.validUntil) > new Date()
             const usagePercent = promo.usageLimit ? (promo.totalUsed / promo.usageLimit) * 100 : 0
 
@@ -362,6 +372,17 @@ export default function AdminPromotions() {
               Tạo khuyến mãi đầu tiên
             </Button>
           </div>
+        )}
+
+        {/* Pagination */}
+        {promotions.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            totalItems={promotions.length}
+            itemsPerPage={itemsPerPage}
+          />
         )}
 
         {/* Modal */}

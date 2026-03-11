@@ -12,6 +12,7 @@ import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/use-toast'
+import { Pagination } from '@/components/ui/pagination'
 
 export default function AdminMoviesPage() {
   const router = useRouter()
@@ -23,6 +24,8 @@ export default function AdminMoviesPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [filter, setFilter] = useState('all')
   const [authChecked, setAuthChecked] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== 'admin') {
@@ -79,6 +82,18 @@ export default function AdminMoviesPage() {
   const filteredMovies = movies.filter(movie =>
     movie.title?.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredMovies.length / itemsPerPage)
+  const paginatedMovies = filteredMovies.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, filter])
 
   if (!authChecked) {
     return null
@@ -156,12 +171,12 @@ export default function AdminMoviesPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-800">
-                  {filteredMovies.map((movie, index) => (
+                  {paginatedMovies.map((movie, index) => (
                     <motion.tr
                       key={movie._id}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      transition={{ delay: index * 0.05 }}
+                      transition={{ delay: index * 0.02 }}
                       className="hover:bg-gray-800/50 transition-colors"
                     >
                       <td className="px-6 py-4">
@@ -251,6 +266,15 @@ export default function AdminMoviesPage() {
                 <p className="text-gray-400">Không tìm thấy phim nào</p>
               </div>
             )}
+
+            {/* Pagination */}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              totalItems={filteredMovies.length}
+              itemsPerPage={itemsPerPage}
+            />
           </div>
         )}
       </div>

@@ -183,7 +183,7 @@ export function Chatbot() {
               </div>
               <button
                 onClick={() => setChatbotOpen(false)}
-                className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-full hover:bg-gray-700 dark:hover:bg-white/10 flex items-center justify-center transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>

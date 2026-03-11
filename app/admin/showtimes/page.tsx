@@ -11,6 +11,7 @@ import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/use-toast'
+import { Pagination } from '@/components/ui/pagination'
 
 export default function AdminShowtimesPage() {
   const router = useRouter()
@@ -22,6 +23,15 @@ export default function AdminShowtimesPage() {
   const [generating, setGenerating] = useState(false)
   const [stats, setStats] = useState<any>(null)
   const [authChecked, setAuthChecked] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
+
+  // Pagination logic
+  const totalPages = Math.ceil(showtimes.length / itemsPerPage)
+  const paginatedShowtimes = showtimes.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== 'admin') {
@@ -287,12 +297,12 @@ export default function AdminShowtimesPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-800">
-                  {showtimes.map((showtime, index) => (
+                  {paginatedShowtimes.map((showtime, index) => (
                     <motion.tr
                       key={showtime._id}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      transition={{ delay: index * 0.05 }}
+                      transition={{ delay: index * 0.02 }}
                       className="hover:bg-gray-800/50"
                     >
                       <td className="px-6 py-4">
@@ -352,6 +362,15 @@ export default function AdminShowtimesPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination */}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              totalItems={showtimes.length}
+              itemsPerPage={itemsPerPage}
+            />
           </div>
         )}
       </div>

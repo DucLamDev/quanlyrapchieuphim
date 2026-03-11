@@ -132,8 +132,7 @@ export default function PaymentPage() {
         const vnpayData = {
           bookingId: params.id,
           amount: booking.totalAmount,
-          orderInfo: `Thanh toan ve xem phim - Ma dat ve: ${booking.bookingCode}`,
-          returnUrl: `${window.location.origin}/payment/vnpay-callback`
+          orderInfo: `Thanh toan ve xem phim - Ma dat ve: ${booking.bookingCode}`
         }
 
         const response = await api.createVNPayPayment(vnpayData)

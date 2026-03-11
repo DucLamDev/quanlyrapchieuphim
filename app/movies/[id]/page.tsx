@@ -5,6 +5,8 @@ import { useParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Star, Clock, Calendar, Play, Heart } from 'lucide-react'
 import Image from 'next/image'
+import { format } from 'date-fns'
+import { vi } from 'date-fns/locale'
 import { api } from '@/lib/api'
 import { useAuthStore } from '@/lib/store'
 import { Header } from '@/components/layout/header'
@@ -12,6 +14,7 @@ import { Footer } from '@/components/layout/footer'
 import { Button } from '@/components/ui/button'
 import { formatDate, getMovieDuration, getAgeRatingColor } from '@/lib/utils'
 import { useToast } from '@/components/ui/use-toast'
+import { MovieReviews } from '@/components/movie/MovieReviews'
 
 export default function MovieDetailPage() {
   const params = useParams()
@@ -22,12 +25,13 @@ export default function MovieDetailPage() {
   const [showtimes, setShowtimes] = useState([])
   const [loading, setLoading] = useState(true)
   const [showTrailer, setShowTrailer] = useState(false)
+  const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'))
 
   useEffect(() => {
     if (params.id) {
       fetchMovieDetails()
     }
-  }, [params.id])
+  }, [params.id, selectedDate])
 
   const fetchMovieDetails = async () => {
     try {
@@ -35,7 +39,7 @@ export default function MovieDetailPage() {
       const [movieResponse, showtimesResponse] = await Promise.all([
         api.getMovie(params.id as string),
         api.getShowtimesByMovie(params.id as string, { 
-          date: new Date().toISOString().split('T')[0] 
+          date: selectedDate
         })
       ])
 
@@ -199,7 +203,7 @@ export default function MovieDetailPage() {
                       Xem Trailer
                     </Button>
                   )}
-                  <Button size="lg" variant="outline" className="gap-2 border-white text-white hover:bg-white/10">
+                  <Button size="lg" variant="outline" className="gap-2 border-white text-white hover:bg-white hover:text-black dark:hover:bg-white/10 dark:hover:text-white">
                     <Heart className="w-5 h-5" />
                     Yêu thích
                   </Button>
@@ -235,13 +239,57 @@ export default function MovieDetailPage() {
                 </div>
               </section>
             )}
+
+            {/* Reviews Section */}
+            <MovieReviews movieId={params.id as string} movieTitle={movie.title} />
           </div>
 
           {/* Sidebar - Showtimes */}
           <div>
             <div className="sticky top-24 bg-gray-900 rounded-lg p-6 border border-gray-800">
-              <h2 className="text-2xl font-bold mb-4">Lịch chiếu hôm nay</h2>
+              <h2 className="text-2xl font-bold mb-4">Lịch chiếu</h2>
               
+              {/* Date Selector - Max 4 days advance booking */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-3 text-gray-400">Chọn ngày:</label>
+                <div className="space-y-2">
+                  {Array.from({ length: 4 }, (_, i) => {
+                    const date = new Date()
+                    date.setDate(date.getDate() + i)
+                    const dateStr = format(date, 'yyyy-MM-dd')
+                    const isToday = i === 0
+                    const isSelected = selectedDate === dateStr
+                    
+                    return (
+                      <button
+                        key={dateStr}
+                        onClick={() => setSelectedDate(dateStr)}
+                        className={`w-full px-4 py-3 rounded-lg text-left transition-all ${
+                          isSelected
+                            ? 'bg-gradient-to-r from-cinema-600 to-purple-600 text-white shadow-lg'
+                            : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+                        }`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <div className="text-sm font-medium">
+                              {isToday ? 'Hôm nay' : format(date, 'EEEE', { locale: vi })}
+                            </div>
+                            <div className="text-xs opacity-75">
+                              {format(date, 'dd/MM/yyyy')}
+                            </div>
+                          </div>
+                          {isSelected && (
+                            <div className="w-2 h-2 bg-white rounded-full" />
+                          )}
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Showtimes List */}
               {showtimes.length > 0 ? (
                 <div className="space-y-3">
                   {showtimes

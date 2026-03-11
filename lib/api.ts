@@ -224,6 +224,26 @@ class APIClient {
     return response.data
   }
 
+  async canReviewMovie(movieId: string) {
+    const response = await this.client.get(`/reviews/can-review/${movieId}`)
+    return response.data
+  }
+
+  async getMyReview(movieId: string) {
+    const response = await this.client.get(`/reviews/my-review/${movieId}`)
+    return response.data
+  }
+
+  async moderateReview(id: string, data: { status: string; reason?: string }) {
+    const response = await this.client.put(`/reviews/${id}/moderate`, data)
+    return response.data
+  }
+
+  async toggleReviewVisibility(id: string) {
+    const response = await this.client.put(`/reviews/${id}/visibility`)
+    return response.data
+  }
+
   // Recommendations
   async getPersonalizedRecommendations() {
     const response = await this.client.get('/recommendations/personalized')

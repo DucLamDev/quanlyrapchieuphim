@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Star, Trash2, Eye, MessageSquare, ThumbsUp, ThumbsDown, Filter } from 'lucide-react'
+import { Star, Trash2, Eye, EyeOff, MessageSquare, ThumbsUp, ThumbsDown, Filter, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { useAuthStore } from '@/lib/store'
 import { api } from '@/lib/api'
 import { Button } from '@/components/ui/button'
+import { Pagination } from '@/components/ui/pagination'
 
 export default function AdminReviews() {
   const router = useRouter()
@@ -17,7 +18,14 @@ export default function AdminReviews() {
   const [reviews, setReviews] = useState<any[]>([])
   const [filteredReviews, setFilteredReviews] = useState<any[]>([])
   const [sentimentFilter, setSentimentFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState('all')
   const [authChecked, setAuthChecked] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [reviewStats, setReviewStats] = useState({ 
+    total: 0, pending: 0, approved: 0, rejected: 0,
+    positive: 0, neutral: 0, negative: 0, averageRating: '0'
+  })
+  const itemsPerPage = 10
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== 'admin') {
@@ -35,14 +43,34 @@ export default function AdminReviews() {
   const fetchReviews = async () => {
     try {
       setLoading(true)
-      const response = await api.getAllReviews({ limit: 100 })
+      const response = await api.getAllReviews({ limit: 100, status: statusFilter !== 'all' ? statusFilter : undefined })
       const allReviews = (response.data || []).map((r: any) => ({
         ...r,
         movieTitle: r.movieId?.title || 'N/A',
         sentiment: r.sentiment?.label || 'neutral',
-        comment: r.content || r.comment || ''
+        comment: r.content || r.comment || '',
+        moderationStatus: r.moderationStatus || 'approved'
       }))
       setReviews(allReviews)
+      
+      // Calculate stats
+      const positive = allReviews.filter((r: any) => r.sentiment === 'positive').length
+      const neutral = allReviews.filter((r: any) => r.sentiment === 'neutral').length
+      const negative = allReviews.filter((r: any) => r.sentiment === 'negative').length
+      const avgRating = allReviews.length > 0 
+        ? (allReviews.reduce((sum: number, r: any) => sum + (r.rating || 0), 0) / allReviews.length).toFixed(1)
+        : '0'
+      
+      setReviewStats({
+        total: response.stats?.total || allReviews.length,
+        pending: response.stats?.pending || 0,
+        approved: response.stats?.approved || 0,
+        rejected: response.stats?.rejected || 0,
+        positive,
+        neutral,
+        negative,
+        averageRating: avgRating
+      })
     } catch (error) {
       console.error('Error fetching reviews:', error)
     } finally {
@@ -58,7 +86,15 @@ export default function AdminReviews() {
     }
 
     setFilteredReviews(filtered)
+    setCurrentPage(1) // Reset page when filter changes
   }
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredReviews.length / itemsPerPage)
+  const paginatedReviews = filteredReviews.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
 
   const handleDelete = async (reviewId: string) => {
     if (!confirm('Bạn có chắc muốn xóa review này?')) return
@@ -101,14 +137,46 @@ export default function AdminReviews() {
     ))
   }
 
-  const stats = {
-    total: reviews.length,
-    positive: reviews.filter(r => r.sentiment === 'positive').length,
-    neutral: reviews.filter(r => r.sentiment === 'neutral').length,
-    negative: reviews.filter(r => r.sentiment === 'negative').length,
-    averageRating: reviews.length > 0
-      ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
-      : 0
+  const handleModerate = async (reviewId: string, status: 'approved' | 'rejected') => {
+    try {
+      await api.moderateReview(reviewId, { status })
+      await fetchReviews()
+    } catch (error) {
+      console.error('Error moderating review:', error)
+    }
+  }
+
+  const handleToggleVisibility = async (reviewId: string) => {
+    try {
+      await api.toggleReviewVisibility(reviewId)
+      await fetchReviews()
+    } catch (error) {
+      console.error('Error toggling visibility:', error)
+    }
+  }
+
+  const getStatusBadge = (status: string) => {
+    const styles: Record<string, string> = {
+      pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500',
+      approved: 'bg-green-500/20 text-green-400 border-green-500',
+      rejected: 'bg-red-500/20 text-red-400 border-red-500'
+    }
+    const icons: Record<string, JSX.Element> = {
+      pending: <Clock className="w-3 h-3" />,
+      approved: <CheckCircle className="w-3 h-3" />,
+      rejected: <XCircle className="w-3 h-3" />
+    }
+    const labels: Record<string, string> = {
+      pending: 'Chờ duyệt',
+      approved: 'Đã duyệt',
+      rejected: 'Từ chối'
+    }
+    return (
+      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs border ${styles[status] || styles.pending}`}>
+        {icons[status]}
+        {labels[status] || status}
+      </span>
+    )
   }
 
   if (!authChecked) {
@@ -139,11 +207,11 @@ export default function AdminReviews() {
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {[
-            { label: 'Tổng reviews', value: stats.total, icon: MessageSquare, color: 'text-blue-400' },
-            { label: 'Tích cực', value: stats.positive, icon: ThumbsUp, color: 'text-green-400' },
-            { label: 'Trung lập', value: stats.neutral, icon: MessageSquare, color: 'text-gray-400' },
-            { label: 'Tiêu cực', value: stats.negative, icon: ThumbsDown, color: 'text-red-400' },
-            { label: 'Trung bình', value: `${stats.averageRating} ⭐`, icon: Star, color: 'text-yellow-400' }
+            { label: 'Tổng reviews', value: reviewStats.total, icon: MessageSquare, color: 'text-blue-400' },
+            { label: 'Chờ duyệt', value: reviewStats.pending, icon: Clock, color: 'text-yellow-400' },
+            { label: 'Đã duyệt', value: reviewStats.approved, icon: CheckCircle, color: 'text-green-400' },
+            { label: 'Từ chối', value: reviewStats.rejected, icon: XCircle, color: 'text-red-400' },
+            { label: 'Trung bình', value: `${reviewStats.averageRating} ⭐`, icon: Star, color: 'text-yellow-400' }
           ].map((stat, index) => {
             const Icon = stat.icon
             return (
@@ -167,31 +235,54 @@ export default function AdminReviews() {
         </div>
 
         {/* Filters */}
-        <div className="flex gap-2">
-          <span className="text-gray-400 self-center">Lọc theo sentiment:</span>
-          {[
-            { value: 'all', label: 'Tất cả' },
-            { value: 'positive', label: 'Tích cực' },
-            { value: 'neutral', label: 'Trung lập' },
-            { value: 'negative', label: 'Tiêu cực' }
-          ].map((filter) => (
-            <button
-              key={filter.value}
-              onClick={() => setSentimentFilter(filter.value)}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                sentimentFilter === filter.value
-                  ? 'bg-cinema-600 text-white'
-                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-              }`}
-            >
-              {filter.label}
-            </button>
-          ))}
+        <div className="flex flex-wrap gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-gray-400">Trạng thái:</span>
+            {[
+              { value: 'all', label: 'Tất cả' },
+              { value: 'pending', label: 'Chờ duyệt' },
+              { value: 'approved', label: 'Đã duyệt' },
+              { value: 'rejected', label: 'Từ chối' }
+            ].map((filter) => (
+              <button
+                key={filter.value}
+                onClick={() => { setStatusFilter(filter.value); fetchReviews(); }}
+                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                  statusFilter === filter.value
+                    ? 'bg-cinema-600 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-gray-400">Sentiment:</span>
+            {[
+              { value: 'all', label: 'Tất cả' },
+              { value: 'positive', label: 'Tích cực' },
+              { value: 'neutral', label: 'Trung lập' },
+              { value: 'negative', label: 'Tiêu cực' }
+            ].map((filter) => (
+              <button
+                key={filter.value}
+                onClick={() => setSentimentFilter(filter.value)}
+                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                  sentimentFilter === filter.value
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Reviews List */}
         <div className="space-y-4">
-          {filteredReviews.map((review: any) => (
+          {paginatedReviews.map((review: any) => (
             <motion.div
               key={review._id}
               initial={{ opacity: 0, y: 20 }}
@@ -202,32 +293,87 @@ export default function AdminReviews() {
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="font-bold text-lg">{review.movieTitle}</h3>
+                    {getStatusBadge(review.moderationStatus)}
                     {getSentimentBadge(review.sentiment)}
+                    {review.isVerifiedPurchase && (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs border bg-blue-500/20 text-blue-400 border-blue-500">
+                        <CheckCircle className="w-3 h-3" />
+                        Đã mua vé
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center gap-4 text-sm text-gray-400">
                     <span>{review.userId?.fullName || 'Anonymous'}</span>
+                    <span>{review.userId?.email}</span>
                     <span>{new Date(review.createdAt).toLocaleDateString('vi-VN')}</span>
                     <div className="flex items-center gap-1">
-                      {renderStars(review.rating)}
+                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      <span className="text-yellow-400 font-bold">{review.rating}/10</span>
                     </div>
                   </div>
                 </div>
 
-                <Button
-                  onClick={() => handleDelete(review._id)}
-                  variant="outline"
-                  size="sm"
-                  className="text-red-400 hover:text-red-300"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  {review.moderationStatus === 'pending' && (
+                    <>
+                      <Button
+                        onClick={() => handleModerate(review._id, 'approved')}
+                        variant="outline"
+                        size="sm"
+                        className="text-green-400 hover:text-green-300 hover:bg-green-500/10"
+                      >
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        Duyệt
+                      </Button>
+                      <Button
+                        onClick={() => handleModerate(review._id, 'rejected')}
+                        variant="outline"
+                        size="sm"
+                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                      >
+                        <XCircle className="w-4 h-4 mr-1" />
+                        Từ chối
+                      </Button>
+                    </>
+                  )}
+                  <Button
+                    onClick={() => handleToggleVisibility(review._id)}
+                    variant="outline"
+                    size="sm"
+                    className="text-gray-400 hover:text-gray-300"
+                    title={review.isVisible ? 'Ẩn đánh giá' : 'Hiện đánh giá'}
+                  >
+                    {review.isVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </Button>
+                  <Button
+                    onClick={() => handleDelete(review._id)}
+                    variant="outline"
+                    size="sm"
+                    className="text-red-400 hover:text-red-300"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
+
+              {review.title && (
+                <h4 className="font-medium text-white mb-2">{review.title}</h4>
+              )}
 
               <p className="text-gray-300 mb-4">{review.comment}</p>
 
               <div className="flex items-center gap-4 text-sm text-gray-400">
-                <span>{review.likes || 0} likes</span>
-                <span>{review.dislikes || 0} dislikes</span>
+                <span className="flex items-center gap-1">
+                  <ThumbsUp className="w-4 h-4" />
+                  {review.likes?.length || 0}
+                </span>
+                <span className="flex items-center gap-1">
+                  <ThumbsDown className="w-4 h-4" />
+                  {review.dislikes?.length || 0}
+                </span>
+                {!review.isVisible && (
+                  <span className="text-yellow-500">• Đang ẩn</span>
+                )}
               </div>
             </motion.div>
           ))}
@@ -239,6 +385,15 @@ export default function AdminReviews() {
             <p className="text-gray-500">Không có reviews nào</p>
           </div>
         )}
+
+        {/* Pagination */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalItems={filteredReviews.length}
+          itemsPerPage={itemsPerPage}
+        />
       </div>
     </AdminLayout>
   )

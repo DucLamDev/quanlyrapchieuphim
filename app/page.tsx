@@ -304,7 +304,7 @@ export default function HomePage() {
                 </Button>
               </Link>
               <Link href="/movies">
-                <Button size="lg" variant="outline" className="text-white border-white hover:bg-white/10">
+                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-black dark:hover:bg-white/10 dark:hover:text-white">
                   Xem phim
                 </Button>
               </Link>

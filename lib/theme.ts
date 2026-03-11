@@ -3,6 +3,13 @@ import { persist } from 'zustand/middleware'
 
 type Theme = 'light' | 'dark'
 
+const applyTheme = (theme: Theme) => {
+  if (typeof window === 'undefined') return
+
+  document.documentElement.classList.remove('light', 'dark')
+  document.documentElement.classList.add(theme)
+}
+
 interface ThemeState {
   theme: Theme
   toggleTheme: () => void
@@ -15,25 +22,19 @@ export const useThemeStore = create<ThemeState>()(
       theme: 'dark',
       toggleTheme: () => set((state) => {
         const newTheme = state.theme === 'dark' ? 'light' : 'dark'
-        if (typeof window !== 'undefined') {
-          document.documentElement.classList.remove(state.theme)
-          document.documentElement.classList.add(newTheme)
-        }
+        applyTheme(newTheme)
         return { theme: newTheme }
       }),
       setTheme: (theme) => set(() => {
-        if (typeof window !== 'undefined') {
-          document.documentElement.classList.remove('light', 'dark')
-          document.documentElement.classList.add(theme)
-        }
+        applyTheme(theme)
         return { theme }
       })
     }),
     {
       name: 'theme-storage',
       onRehydrateStorage: () => (state) => {
-        if (state && typeof window !== 'undefined') {
-          document.documentElement.classList.add(state.theme)
+        if (state) {
+          applyTheme(state.theme)
         }
       }
     }

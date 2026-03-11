@@ -127,17 +127,18 @@ export default function BookingPage() {
     if (quantity === 0) {
       removeCombo(combo._id)
     } else {
-      const existingCombo = selectedCombos.find(c => c._id === combo._id)
-      if (existingCombo) {
-        // Update quantity
+      // Use the store's setCombos to update directly
+      const existingComboIndex = selectedCombos.findIndex(c => c._id === combo._id || c.comboId === combo._id)
+      if (existingComboIndex >= 0) {
+        // Update existing combo quantity
         const updatedCombos = selectedCombos.map(c =>
-          c._id === combo._id ? { ...c, quantity } : c
+          (c._id === combo._id || c.comboId === combo._id) ? { ...c, quantity } : c
         )
-        // This is a workaround - ideally we'd have an updateCombo method
-        removeCombo(combo._id)
-        updatedCombos.forEach(c => addCombo(c))
+        useBookingStore.getState().setCombos(updatedCombos)
       } else {
-        addCombo({ ...combo, comboId: combo._id, quantity })
+        // Add new combo
+        const newCombo = { ...combo, comboId: combo._id, quantity }
+        useBookingStore.getState().setCombos([...selectedCombos, newCombo])
       }
     }
   }

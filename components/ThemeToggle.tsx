@@ -9,8 +9,8 @@ export function ThemeToggle() {
   const { theme, toggleTheme } = useThemeStore()
 
   useEffect(() => {
-    // Apply theme on mount
     const currentTheme = useThemeStore.getState().theme
+    document.documentElement.classList.remove('light', 'dark')
     document.documentElement.classList.add(currentTheme)
   }, [])
 
@@ -19,13 +19,19 @@ export function ThemeToggle() {
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       onClick={toggleTheme}
-      className="relative w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center transition-colors hover:bg-gray-300 dark:hover:bg-gray-600"
+      className="relative flex items-center gap-2 rounded-full border border-gray-300 bg-white px-3 py-2 text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
       aria-label="Toggle theme"
     >
       {theme === 'dark' ? (
-        <Sun className="w-5 h-5 text-yellow-500" />
+        <>
+          <Sun className="w-4 h-4 text-yellow-500" />
+          <span className="hidden text-sm sm:inline">Sáng</span>
+        </>
       ) : (
-        <Moon className="w-5 h-5 text-gray-700" />
+        <>
+          <Moon className="w-4 h-4 text-blue-400" />
+          <span className="hidden text-sm sm:inline">Tối</span>
+        </>
       )}
     </motion.button>
   )

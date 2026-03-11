@@ -10,6 +10,7 @@ import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/use-toast'
+import { Pagination } from '@/components/ui/pagination'
 
 export default function AdminCinemasPage() {
   const router = useRouter()
@@ -23,6 +24,8 @@ export default function AdminCinemasPage() {
   const [editingCinema, setEditingCinema] = useState<any>(null)
   const [saving, setSaving] = useState(false)
   const [authChecked, setAuthChecked] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 6
   const [formData, setFormData] = useState({
     name: '',
     address: '',
@@ -235,6 +238,18 @@ export default function AdminCinemasPage() {
     cinema.name?.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredCinemas.length / itemsPerPage)
+  const paginatedCinemas = filteredCinemas.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
+
+  // Reset page when search changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery])
+
   if (!authChecked) {
     return null
   }
@@ -276,8 +291,9 @@ export default function AdminCinemasPage() {
             <div className="spinner" />
           </div>
         ) : (
+          <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCinemas.map((cinema, index) => (
+            {paginatedCinemas.map((cinema, index) => (
               <motion.div
                 key={cinema._id}
                 initial={{ opacity: 0, y: 20 }}
@@ -356,6 +372,16 @@ export default function AdminCinemasPage() {
               </motion.div>
             ))}
           </div>
+
+          {/* Pagination */}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              totalItems={filteredCinemas.length}
+              itemsPerPage={itemsPerPage}
+            />
+          </>
         )}
 
         {/* Modal Form */}

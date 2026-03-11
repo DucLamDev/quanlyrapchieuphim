@@ -11,6 +11,7 @@ import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/use-toast'
+import { Pagination, usePagination } from '@/components/ui/pagination'
 
 export default function AdminUsersPage() {
   const router = useRouter()
@@ -22,6 +23,8 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
   const [showModal, setShowModal] = useState(false)
   const [showEditCinemaModal, setShowEditCinemaModal] = useState(false)
   const [editingUser, setEditingUser] = useState<any>(null)
@@ -173,6 +176,18 @@ export default function AdminUsersPage() {
     return matchesSearch && matchesRole
   })
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage)
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, roleFilter])
+
   if (!authChecked) {
     return null
   }
@@ -250,12 +265,12 @@ export default function AdminUsersPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-800">
-                  {filteredUsers.map((user, index) => (
+                  {paginatedUsers.map((user, index) => (
                     <motion.tr
                       key={user._id}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      transition={{ delay: index * 0.05 }}
+                      transition={{ delay: index * 0.02 }}
                       className="hover:bg-gray-800/50"
                     >
                       <td className="px-6 py-4">
@@ -353,6 +368,15 @@ export default function AdminUsersPage() {
                 <p className="text-gray-400">Không tìm thấy người dùng</p>
               </div>
             )}
+
+            {/* Pagination */}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              totalItems={filteredUsers.length}
+              itemsPerPage={itemsPerPage}
+            />
           </div>
         )}
 

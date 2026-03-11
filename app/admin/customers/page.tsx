@@ -11,6 +11,7 @@ import { AdminLayout } from '@/components/layout/AdminLayout'
 import { api } from '@/lib/api'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { Pagination } from '@/components/ui/pagination'
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<any[]>([])
@@ -18,6 +19,8 @@ export default function CustomersPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [filterTier, setFilterTier] = useState('all')
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
   useEffect(() => {
     fetchCustomers()
@@ -62,6 +65,18 @@ export default function CustomersPage() {
     
     return matchesSearch && matchesTier
   })
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage)
+  const paginatedCustomers = filteredCustomers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, filterTier])
 
   const getLoyaltyBadgeColor = (tier: string) => {
     const colors = {
@@ -143,7 +158,7 @@ export default function CustomersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">
-              {filteredCustomers.map((customer) => (
+              {paginatedCustomers.map((customer) => (
                 <tr key={customer._id} className="hover:bg-gray-800/50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -202,6 +217,15 @@ export default function CustomersPage() {
               ))}
             </tbody>
           </table>
+
+          {/* Pagination */}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            totalItems={filteredCustomers.length}
+            itemsPerPage={itemsPerPage}
+          />
         </div>
 
         {/* Customer Details Modal */}

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react'
-import { api } from '@/lib/api'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { Button } from '@/components/ui/button'
@@ -21,33 +20,22 @@ export default function VNPayCallbackPage() {
 
   useEffect(() => {
     verifyPayment()
-  }, [])
+  }, [searchParams])
 
-  const verifyPayment = async () => {
+  const verifyPayment = () => {
     try {
-      // Get all query parameters from VNPay callback
       const params: any = {}
       searchParams.forEach((value, key) => {
         params[key] = value
       })
 
-      // Extract booking ID from vnp_TxnRef (format: bookingId_timestamp)
-      const txnRef = params.vnp_TxnRef || ''
-      const extractedBookingId = txnRef.split('_')[0] // Get booking ID before timestamp
+      const extractedBookingId = params.bookingId || (params.vnp_TxnRef || '').split('_')[0] || null
       setBookingId(extractedBookingId)
 
-      console.log('VNPay callback params:', params)
-      console.log('Extracted booking ID:', extractedBookingId)
-
-      // Verify payment with backend
-      const response = await api.verifyVNPayCallback(params)
-
-      console.log('Verify payment response:', response)
-
-      if (response.success) {
+      if (params.success === 'true') {
         setStatus('success')
         setMessage('Thanh toán thành công! Vé của bạn đã được xác nhận.')
-        
+
         toast({
           title: 'Thanh toán thành công',
           description: 'Vé của bạn đã được xác nhận'
@@ -62,7 +50,14 @@ export default function VNPayCallbackPage() {
           }
         }, 2000)
       } else {
-        throw new Error(response.message || 'Thanh toán thất bại')
+        setStatus('failed')
+        setMessage(params.message || 'Thanh toán thất bại. Vui lòng liên hệ hỗ trợ.')
+
+        toast({
+          title: 'Thanh toán thất bại',
+          description: params.message || 'Đã có lỗi xảy ra',
+          variant: 'destructive'
+        })
       }
     } catch (error: any) {
       console.error('Error verifying VNPay payment:', error)

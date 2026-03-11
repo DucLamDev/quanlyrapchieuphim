@@ -127,7 +127,7 @@ export function HeroSection({ movies }: HeroSectionProps) {
                   </Button>
                 </Link>
                 <Link href={`/movies/${currentMovie._id}`}>
-                  <Button size="lg" variant="outline" className="gap-2 text-white border-white hover:bg-white/10">
+                  <Button size="lg" variant="outline" className="gap-2 border-white text-white hover:bg-white hover:text-black dark:hover:bg-white/10 dark:hover:text-white">
                     <Info className="w-5 h-5" />
                     Chi Tiết
                   </Button>

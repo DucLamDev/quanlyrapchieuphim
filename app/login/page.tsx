@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
@@ -10,15 +10,32 @@ import { useAuthStore } from '@/lib/store'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/use-toast'
 
+const REMEMBER_KEY = 'cinema_remember_login'
+
 export default function LoginPage() {
   const router = useRouter()
   const { toast } = useToast()
   const { setUser, setToken } = useAuthStore()
   const [loading, setLoading] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   })
+
+  useEffect(() => {
+    // Load saved credentials on mount
+    const saved = localStorage.getItem(REMEMBER_KEY)
+    if (saved) {
+      try {
+        const { email, password } = JSON.parse(saved)
+        setFormData({ email, password })
+        setRememberMe(true)
+      } catch (e) {
+        localStorage.removeItem(REMEMBER_KEY)
+      }
+    }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,6 +55,13 @@ export default function LoginPage() {
       
       setUser(response.user)
       setToken(response.token)
+
+      // Save or clear remember me credentials
+      if (rememberMe) {
+        localStorage.setItem(REMEMBER_KEY, JSON.stringify(formData))
+      } else {
+        localStorage.removeItem(REMEMBER_KEY)
+      }
 
       toast({
         title: 'Thành công',
@@ -109,8 +133,13 @@ export default function LoginPage() {
             </div>
 
             <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center text-gray-400">
-                <input type="checkbox" className="mr-2 rounded" />
+              <label className="flex items-center text-gray-400 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="mr-2 rounded accent-cinema-500" 
+                />
                 Ghi nhớ đăng nhập
               </label>
               <Link href="/forgot-password" className="text-cinema-500 hover:text-cinema-400">

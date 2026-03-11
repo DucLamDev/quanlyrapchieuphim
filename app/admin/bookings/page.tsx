@@ -9,6 +9,7 @@ import { useAuthStore } from '@/lib/store'
 import { api } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { TicketPDF } from '@/components/staff/TicketPDF'
+import { Pagination } from '@/components/ui/pagination'
 
 export default function AdminBookings() {
   const router = useRouter()
@@ -23,6 +24,8 @@ export default function AdminBookings() {
   const [showTicket, setShowTicket] = useState(false)
   const [ticketData, setTicketData] = useState<any>(null)
   const [authChecked, setAuthChecked] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== 'admin') {
@@ -69,7 +72,15 @@ export default function AdminBookings() {
     }
 
     setFilteredBookings(filtered)
+    setCurrentPage(1) // Reset page when filters change
   }
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredBookings.length / itemsPerPage)
+  const paginatedBookings = filteredBookings.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
 
   const handleViewTicket = async (bookingId: string) => {
     try {
@@ -229,7 +240,7 @@ export default function AdminBookings() {
                 </tr>
               </thead>
               <tbody>
-                {filteredBookings.map((booking: any) => (
+                {paginatedBookings.map((booking: any) => (
                   <tr key={booking._id} className="border-t border-gray-800 hover:bg-gray-800/50">
                     <td className="py-4 px-6 font-mono text-sm text-cinema-400">{booking.bookingCode}</td>
                     <td className="py-4 px-6">
@@ -275,6 +286,15 @@ export default function AdminBookings() {
               Không tìm thấy booking nào
             </div>
           )}
+
+          {/* Pagination */}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            totalItems={filteredBookings.length}
+            itemsPerPage={itemsPerPage}
+          />
         </motion.div>
 
         {/* Ticket Modal */}

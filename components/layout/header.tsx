@@ -53,7 +53,7 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-black/95 backdrop-blur-lg border-b border-gray-800">
+    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-lg dark:border-gray-800 dark:bg-black/95">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -79,7 +79,7 @@ export function Header() {
                   <Button
                     variant="ghost"
                     className={cn(
-                      'relative text-gray-300 hover:text-white',
+                      'relative text-gray-700 hover:text-black dark:text-gray-300 dark:hover:text-white',
                       isActive && 'text-cinema-500'
                     )}
                   >
@@ -111,7 +111,7 @@ export function Header() {
               variant="ghost"
               size="icon"
               onClick={() => setSearchOpen(true)}
-              className="text-gray-300 dark:text-gray-300 hover:text-white dark:hover:text-white"
+              className="text-gray-700 hover:text-black dark:text-gray-300 dark:hover:text-white"
             >
               <Search className="w-5 h-5" />
             </Button>
@@ -123,7 +123,7 @@ export function Header() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="text-gray-300 hover:text-white"
+                  className="text-gray-700 hover:text-black dark:text-gray-300 dark:hover:text-white"
                 >
                   <User className="w-5 h-5" />
                 </Button>
@@ -139,11 +139,11 @@ export function Header() {
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className="absolute right-0 mt-2 w-64 glass rounded-lg shadow-lg p-4 z-50"
+                        className="absolute right-0 z-50 mt-2 w-64 rounded-lg border border-gray-200 bg-white p-4 shadow-lg dark:border-gray-800 dark:bg-gray-900"
                       >
-                        <div className="mb-4 pb-4 border-b border-gray-700">
-                          <p className="font-semibold text-white">{user?.fullName}</p>
-                          <p className="text-sm text-gray-400">{user?.email}</p>
+                        <div className="mb-4 border-b border-gray-200 pb-4 dark:border-gray-700">
+                          <p className="font-semibold text-gray-900 dark:text-white">{user?.fullName}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">{user?.email}</p>
                           {user?.loyaltyTier && (
                             <span className={cn(
                               'inline-block mt-2 px-2 py-1 rounded text-xs font-semibold',
@@ -156,20 +156,20 @@ export function Header() {
 
                         <div className="space-y-1">
                           <Link href="/profile" onClick={() => setIsUserMenuOpen(false)}>
-                            <Button variant="ghost" className="w-full justify-start text-gray-300 hover:text-white">
+                            <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-black dark:text-gray-300 dark:hover:text-white">
                               <Settings className="w-4 h-4 mr-2" />
                               {t('nav.account')}
                             </Button>
                           </Link>
                           <Link href="/profile/bookings" onClick={() => setIsUserMenuOpen(false)}>
-                            <Button variant="ghost" className="w-full justify-start text-gray-300 hover:text-white">
+                            <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-black dark:text-gray-300 dark:hover:text-white">
                               <Ticket className="w-4 h-4 mr-2" />
                               {t('nav.myTickets')}
                             </Button>
                           </Link>
                           {user?.role === 'admin' && (
                             <Link href="/admin" onClick={() => setIsUserMenuOpen(false)}>
-                              <Button variant="ghost" className="w-full justify-start text-gray-300 hover:text-white">
+                              <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-black dark:text-gray-300 dark:hover:text-white">
                                 <Shield className="w-4 h-4 mr-2" />
                                 {t('nav.admin')}
                               </Button>
@@ -177,7 +177,7 @@ export function Header() {
                           )}
                           {user?.role === 'staff' && (
                             <Link href="/staff" onClick={() => setIsUserMenuOpen(false)}>
-                              <Button variant="ghost" className="w-full justify-start text-gray-300 hover:text-white">
+                              <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-black dark:text-gray-300 dark:hover:text-white">
                                 <Ticket className="w-4 h-4 mr-2" />
                                 {t('nav.staff')}
                               </Button>
@@ -185,7 +185,7 @@ export function Header() {
                           )}
                           {user?.role === 'staff' && (
                             <Link href="/staff/counter-booking" onClick={() => setIsUserMenuOpen(false)}>
-                              <Button variant="ghost" className="w-full justify-start text-gray-300 hover:text-white">
+                              <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-black dark:text-gray-300 dark:hover:text-white">
                                 <Settings className="w-4 h-4 mr-2" />
                                 Đặt vé tại quầy
                               </Button>
@@ -208,7 +208,7 @@ export function Header() {
             ) : (
               <div className="hidden md:flex gap-2">
                 <Link href="/login">
-                  <Button variant="ghost" className="text-gray-300 hover:text-white">
+                  <Button variant="ghost" className="text-gray-700 hover:text-black dark:text-gray-300 dark:hover:text-white">
                     {t('nav.login')}
                   </Button>
                 </Link>
