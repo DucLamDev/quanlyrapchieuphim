@@ -22,7 +22,26 @@ export function CrowdPrediction({ showtimeId }: CrowdPredictionProps) {
     try {
       setLoading(true)
       const response = await api.predictShowtimeCrowd(showtimeId)
-      setPrediction(response)
+      const payload = response?.prediction || null
+
+      if (!payload) {
+        setPrediction(null)
+        return
+      }
+
+      setPrediction({
+        occupancyLevel:
+          payload.occupancyLevel ||
+          (payload.predictedOccupancy < 40 ? 'low' : payload.predictedOccupancy < 70 ? 'medium' : 'high'),
+        occupancyPercentage: payload.occupancyPercentage ?? payload.predictedOccupancy ?? 0,
+        prediction: payload.prediction || {
+          confidence: Math.round((payload.confidence || 0) * 100),
+          reasoning: Array.isArray(payload.reasons) ? payload.reasons.join(' • ') : '',
+          recommendation: ''
+        },
+        factors: Array.isArray(payload.factors) ? payload.factors : [],
+        reasons: Array.isArray(payload.reasons) ? payload.reasons : []
+      })
     } catch (error) {
       console.error('Error fetching crowd prediction:', error)
     } finally {
@@ -41,7 +60,8 @@ export function CrowdPrediction({ showtimeId }: CrowdPredictionProps) {
 
   if (!prediction) return null
 
-  const { occupancyLevel, occupancyPercentage, prediction: predictionData, factors } = prediction
+  const { occupancyLevel, occupancyPercentage, prediction: predictionData, factors = [], reasons = [] } = prediction
+  const summaryText = predictionData?.reasoning || (reasons.length > 0 ? reasons.join(' • ') : 'Đang phân tích xu hướng đặt vé của suất chiếu này')
 
   return (
     <motion.div
@@ -69,6 +89,11 @@ export function CrowdPrediction({ showtimeId }: CrowdPredictionProps) {
           </span>
         </div>
 
+        <p className="text-sm text-gray-300 mb-3">
+          <span className="font-semibold text-cinema-400">Phân tích nhanh: </span>
+          {summaryText}
+        </p>
+
         {/* Progress Bar */}
         <div className="relative h-4 bg-gray-800 rounded-full overflow-hidden">
           <motion.div
@@ -84,7 +109,7 @@ export function CrowdPrediction({ showtimeId }: CrowdPredictionProps) {
             }`}
           />
           <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white">
-            {occupancyPercentage}% Dự kiến đầy
+            {Math.max(0, Math.min(100, occupancyPercentage))}% dự kiến lấp đầy
           </span>
         </div>
       </div>
@@ -101,7 +126,7 @@ export function CrowdPrediction({ showtimeId }: CrowdPredictionProps) {
       )}
 
       {/* Factors */}
-      {factors && (
+      {factors.length > 0 && (
         <div className="space-y-3">
           <h4 className="text-sm font-semibold text-gray-400 flex items-center gap-2">
             <AlertCircle className="w-4 h-4" />
@@ -109,34 +134,32 @@ export function CrowdPrediction({ showtimeId }: CrowdPredictionProps) {
           </h4>
           
           <div className="grid grid-cols-2 gap-3">
-            {factors.isGoldenHour && (
-              <div className="flex items-center gap-2 p-2 bg-yellow-500/10 rounded border border-yellow-500/20">
-                <Clock className="w-4 h-4 text-yellow-400" />
-                <span className="text-xs text-yellow-400">Giờ vàng</span>
+            {factors.map((item: any, index: number) => (
+              <div key={`${item.factor}-${index}`} className="flex items-center gap-2 p-2 bg-gray-800/60 rounded border border-gray-700">
+                {String(item.factor).toLowerCase().includes('giờ') ? (
+                  <Clock className="w-4 h-4 text-yellow-400" />
+                ) : String(item.factor).toLowerCase().includes('cuối tuần') ? (
+                  <Calendar className="w-4 h-4 text-purple-400" />
+                ) : String(item.factor).toLowerCase().includes('phim') ? (
+                  <Users className="w-4 h-4 text-green-400" />
+                ) : (
+                  <TrendingUp className="w-4 h-4 text-blue-400" />
+                )}
+                <span className="text-xs text-gray-300">
+                  {item.factor} {typeof item.impact === 'number' ? (item.impact > 0 ? `(+${item.impact})` : `(${item.impact})`) : ''}
+                </span>
               </div>
-            )}
-            
-            {factors.isWeekend && (
-              <div className="flex items-center gap-2 p-2 bg-purple-500/10 rounded border border-purple-500/20">
-                <Calendar className="w-4 h-4 text-purple-400" />
-                <span className="text-xs text-purple-400">Cuối tuần</span>
-              </div>
-            )}
-            
-            {factors.movieRating > 8 && (
-              <div className="flex items-center gap-2 p-2 bg-green-500/10 rounded border border-green-500/20">
-                <Users className="w-4 h-4 text-green-400" />
-                <span className="text-xs text-green-400">Phim hot ({factors.movieRating}/10)</span>
-              </div>
-            )}
-            
-            {factors.isNewRelease && (
-              <div className="flex items-center gap-2 p-2 bg-red-500/10 rounded border border-red-500/20">
-                <TrendingUp className="w-4 h-4 text-red-400" />
-                <span className="text-xs text-red-400">Mới ra mắt</span>
-              </div>
-            )}
+            ))}
           </div>
+        </div>
+      )}
+
+      {reasons.length > 0 && (
+        <div className="mt-4 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+          <p className="text-sm text-gray-300">
+            <span className="font-semibold text-cinema-400">Phân tích: </span>
+            {reasons.join(' • ')}
+          </p>
         </div>
       )}
 

@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosError } from 'axios'
 
-const API_URL ='https://quanlyrapchieuphimbackend.onrender.com/api'
-// const API_URL ='http://localhost:5000/api'
+// const API_URL ='https://quanlyrapchieuphimbackend.onrender.com/api'
+const API_URL ='http://localhost:5000/api'
 
 class APIClient {
   private client: AxiosInstance
@@ -245,20 +245,41 @@ class APIClient {
   }
 
   // Recommendations
-  async getPersonalizedRecommendations() {
-    const response = await this.client.get('/recommendations/personalized')
-    return response.data
-  }
-
-  async getSimilarMovies(movieId: string) {
-    const response = await this.client.get(`/recommendations/similar/${movieId}`)
-    return response.data
-  }
-
-  async getTrendingMovies(days?: number) {
-    const response = await this.client.get('/recommendations/trending', {
-      params: { days }
+  async getPersonalizedRecommendations(limit?: number) {
+    const response = await this.client.get('/recommendations/personalized', {
+      params: { limit }
     })
+    return response.data
+  }
+
+  async getSimilarMovies(movieId: string, limit?: number) {
+    const response = await this.client.get(`/recommendations/similar/${movieId}`, {
+      params: { limit }
+    })
+    return response.data
+  }
+
+  async getTrendingMovies(limit?: number) {
+    const response = await this.client.get('/recommendations/trending', {
+      params: { limit }
+    })
+    return response.data
+  }
+
+  async getBecauseYouWatched(limit?: number) {
+    const response = await this.client.get('/recommendations/because-you-watched', {
+      params: { limit }
+    })
+    return response.data
+  }
+
+  async getComboRecommendations(context?: { seatCount?: number; movieGenres?: string[]; timeSlot?: string }) {
+    const response = await this.client.post('/recommendations/combos', context || {})
+    return response.data
+  }
+
+  async getOptimalCombo(context?: { budget?: number; seatCount?: number; movieGenres?: string[] }) {
+    const response = await this.client.post('/recommendations/combos/optimal', context || {})
     return response.data
   }
 

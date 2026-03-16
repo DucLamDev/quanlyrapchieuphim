@@ -11,6 +11,7 @@ import { HeroSection } from '@/components/home/hero-section'
 import { FeaturesSection } from '@/components/home/features-section'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { PersonalizedMovies, BecauseYouWatched } from '@/components/recommendation'
 
 export default function HomePage() {
   const [nowShowing, setNowShowing] = useState([])
@@ -161,6 +162,12 @@ export default function HomePage() {
 
       {/* Features */}
       <FeaturesSection />
+
+      {/* AI Personalized Recommendations */}
+      <PersonalizedMovies />
+
+      {/* Because You Watched */}
+      <BecauseYouWatched />
 
       {/* Now Showing */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">

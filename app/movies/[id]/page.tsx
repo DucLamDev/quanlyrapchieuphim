@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { formatDate, getMovieDuration, getAgeRatingColor } from '@/lib/utils'
 import { useToast } from '@/components/ui/use-toast'
 import { MovieReviews } from '@/components/movie/MovieReviews'
+import { SimilarMovies } from '@/components/recommendation'
 
 export default function MovieDetailPage() {
   const params = useParams()
@@ -242,6 +243,9 @@ export default function MovieDetailPage() {
 
             {/* Reviews Section */}
             <MovieReviews movieId={params.id as string} movieTitle={movie.title} />
+
+            {/* Similar Movies */}
+            <SimilarMovies movieId={params.id as string} />
           </div>
 
           {/* Sidebar - Showtimes */}

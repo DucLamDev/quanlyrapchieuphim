@@ -18,6 +18,7 @@ import { SeatSelector } from '@/components/booking/seat-selector'
 import { ComboSelector } from '@/components/booking/combo-selector'
 import { CrowdPrediction } from '@/components/booking/crowd-prediction'
 import { useToast } from '@/components/ui/use-toast'
+import { ComboRecommendations } from '@/components/recommendation'
 
 const STEPS = [
   { id: 1, name: 'Chọn ghế', icon: Ticket },
@@ -333,6 +334,10 @@ export default function BookingPage() {
           </div>
         </motion.div>
 
+        <div className="mb-8">
+          <CrowdPrediction showtimeId={params.id as string} />
+        </div>
+
         {/* Progress Steps */}
         <div className="mb-8">
           <div className="flex items-center justify-center gap-4">
@@ -401,10 +406,18 @@ export default function BookingPage() {
                   exit={{ opacity: 0, x: -20 }}
                   className="bg-gray-900 rounded-lg p-6 border border-gray-800"
                 >
-                  <ComboSelector
-                    selectedCombos={selectedCombos}
-                    onComboChange={handleComboChange}
+                  <ComboRecommendations
+                    seatCount={selectedSeats.length}
+                    movieGenres={showtime?.movieId?.genres || []}
+                    onSelectCombo={(combo: any, qty: number) => handleComboChange(combo, qty)}
+                    selectedCombos={selectedCombos.map((c: any) => ({ comboId: c.comboId || c._id, quantity: c.quantity }))}
                   />
+                  <div className="mt-6">
+                    <ComboSelector
+                      selectedCombos={selectedCombos}
+                      onComboChange={handleComboChange}
+                    />
+                  </div>
                 </motion.div>
               )}
 
